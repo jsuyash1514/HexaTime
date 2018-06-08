@@ -9,7 +9,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <service android:name="LiveWallpaper"
+            android:enabled="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_WALLPAPER">
+        <intent-filter>
+            <action android:name="android.service.wallpaper.WallpaperService" >
+            </action>
+        </intent-filter>
+
+        <meta-data
+            android:name="android.service.wallpaper"
+            android:resource="@xml/walpaper"/>
+
+    </service>
+
+
+    <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -17,5 +33,10 @@
             </intent-filter>
         </activity>
     </application>
+
+    <uses-feature
+        android:name="android.software.live_wallpaper"
+        android:required="true" >
+    </uses-feature>
 
 </manifest>
