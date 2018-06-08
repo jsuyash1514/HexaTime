@@ -39,4 +39,6 @@
         android:required="true" >
     </uses-feature>
 
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+
 </manifest>

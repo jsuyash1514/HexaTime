@@ -1,10 +1,14 @@
 package com.example.suyash.hexatime;
 
 
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.provider.AlarmClock;
 import android.service.wallpaper.WallpaperService;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.os.Handler;
 import java.util.Date;
@@ -14,6 +18,8 @@ import java.util.Date;
  */
 
 public class LiveWallpaper extends WallpaperService{
+    static float x,y;
+    String curTime;
     @Override
     public Engine onCreateEngine() {
         return new WallpaperEngine();
@@ -37,9 +43,7 @@ public class LiveWallpaper extends WallpaperService{
             paint.setAntiAlias(true);
             paint.setColor(Color.parseColor("#ffffff"));
             paint.setStyle(Paint.Style.FILL);
-            paint.setTextSize(80);
-            paint.setDither(true);
-
+            paint.setTextSize(120);
 
             handler.post(runnable);
         }
@@ -66,6 +70,20 @@ public class LiveWallpaper extends WallpaperService{
             super.onSurfaceChanged(holder,format,width,height);
         }
 
+        @Override
+        public void onTouchEvent(MotionEvent event){
+            float X = event.getX();
+            float Y = event.getY();
+            Rect rect = new Rect();
+            paint.getTextBounds(curTime,0,curTime.length(),rect);
+            if (rect.contains((int)(X-x),(int)(Y-y))) {
+                Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+            super.onTouchEvent(event);
+        }
+
         private void draw(){
             Date date = new Date();
             int hours = date.getHours();
@@ -77,25 +95,18 @@ public class LiveWallpaper extends WallpaperService{
             if (minutes/10 == 0) m = "0" + minutes;
             String s = seconds + "";
             if (seconds/10 == 0) s = "0" + seconds;
-            String curTime;
+
             curTime = h + ":" + m + ":" + s;
             int color = Color.parseColor("#" + h + m + s);
 
             SurfaceHolder holder = getSurfaceHolder();
-            Canvas canvas = null;
-
-            try {
-                canvas = holder.lockCanvas();
-                if (canvas != null){
-                    canvas.drawColor(color);
-                }
-                float x = (canvas.getWidth() / 2) - (paint.measureText(curTime) / 2);
-                float y = (canvas.getHeight() / 2) - ((paint.ascent() + paint.descent()) / 2);
+            Canvas canvas = holder.lockCanvas();
+            if (canvas != null){
+                canvas.drawColor(color);
+                x = (canvas.getWidth() / 2) - (paint.measureText(curTime) / 2);
+                y = (canvas.getHeight() / 2) - ((paint.ascent() + paint.descent()) / 2);
                 canvas.drawText(curTime,x,y,paint);
-            }finally {
-                if (canvas != null){
-                    holder.unlockCanvasAndPost(canvas);
-                }
+                holder.unlockCanvasAndPost(canvas);
             }
             handler.removeCallbacks(runnable);
             if (visible){
